@@ -13,6 +13,8 @@
 		<script src="http://threejs.org/build/three.min.js"></script>
 		<script src="http://threejs.org/examples/js/loaders/OBJLoader.js"></script>
 
+		<script src="libs/OrbitControls.js"></script>
+
 		<!-- don't think these are doing anything -->
 <!-- 		// <script src="http://threejs.org/examples/js/Detector.js"></script>
 		// <script src="http://threejs.org/examples/js/libs/stats.min.js"></script> -->
@@ -22,7 +24,7 @@
 		// MAIN
 
 			// standard global variables
-			var container, scene, camera, renderer, controls;
+			var container, scene, camera, renderer, controls, stats;
 
 			//custom global variables
 			var mouseX = 0, mouseY = 0;
@@ -42,8 +44,17 @@
 				scene = new THREE.Scene();
 
 				// CAMERA
-				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
+				// camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
+				// camera.position.z = 50;
+
+				// use this camera setup instead - 
+				var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+				var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
+				camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+				scene.add(camera);
+				camera.position.set(0, 20, 0);
 				camera.position.z = 50;
+				//camera.lookOut needs to be called in render function below
 
 				// RENDERER
 				renderer = new THREE.WebGLRenderer({
@@ -57,11 +68,10 @@
 				document.body.appendChild( container );
 				container.appendChild( renderer.domElement );
 
-
 				// EVENTS
 
 				// CONTROLS
-
+				controls = new THREE.OrbitControls( camera, renderer.domElement );
 
 				// LIGHT
 				var ambient = new THREE.AmbientLight( 0x000000 );
@@ -90,14 +100,11 @@
 
 				} );
 
-				//there might be a better way to write these...
-				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+				//there might be a better way to deal with this...
+				// document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 				window.addEventListener( 'resize', onWindowResize, false );
 
 			} //end init
-
-
-
 
 			function onWindowResize() {
 				windowHalfX = window.innerWidth / 2;
@@ -109,12 +116,12 @@
 				renderer.setSize( window.innerWidth, window.innerHeight );
 			}
 
-			function onDocumentMouseMove( event ) {
-				// mouseX = ( event.clientX - windowHalfX ) / 2;
-				// mouseY = ( event.clientY - windowHalfY ) / 2;
-				mouseX = ( event.clientX - windowHalfX );
-				mouseY = ( event.clientY - windowHalfY );
-			}
+			// function onDocumentMouseMove( event ) {
+			// 	// mouseX = ( event.clientX - windowHalfX ) / 2;
+			// 	// mouseY = ( event.clientY - windowHalfY ) / 2;
+			// 	mouseX = ( event.clientX - windowHalfX );
+			// 	mouseY = ( event.clientY - windowHalfY );
+			// }
 
 			function checkIntersection() {
 				//find if mouse is over the model
@@ -133,8 +140,8 @@
 
                 // obj.rotateOnAxis(1, 0); //axis in vector and angle in radians
 
-				camera.position.x += ( mouseX - camera.position.x ) * .05;
-				camera.position.y += ( mouseY - camera.position.y ) * .05;
+				// camera.position.x += ( mouseX - camera.position.x ) * .05;
+				// camera.position.y += ( mouseY - camera.position.y ) * .05;
 
 				camera.lookAt( scene.position );
 
