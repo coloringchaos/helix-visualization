@@ -1,103 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
+
 	<head>
 		<title>helix viz</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-		<style>
-			body {
-				font-family: Monospace;
-				background-color: #000;
-				color: #fff;
-				margin: 0px;
-				overflow: hidden;
-			}
-			#info {
-				color: #fff;
-				position: absolute;
-				top: 10px;
-				width: 100%;
-				text-align: center;
-				z-index: 100;
-				display:block;
-			}
-			#info a, .button { color: #f00; font-weight: bold; text-decoration: underline; cursor: pointer }
-		</style>
+		<link rel=stylesheet href="css/style.css"/>
 	</head>
 
 	<body>
-		<div id="info">
-            <!-- OBJ loader -->
-		</div>
 
 		<script src="http://threejs.org/build/three.min.js"></script>
 		<script src="http://threejs.org/examples/js/loaders/OBJLoader.js"></script>
 
-		<script src="http://threejs.org/examples/js/Detector.js"></script>
-		<script src="http://threejs.org/examples/js/libs/stats.min.js"></script>
+		<!-- don't think these are doing anything -->
+<!-- 		// <script src="http://threejs.org/examples/js/Detector.js"></script>
+		// <script src="http://threejs.org/examples/js/libs/stats.min.js"></script> -->
 
 		<script>
-            var clock = new THREE.Clock();
-            var delta = clock.getDelta(); // seconds.
-            // var rotateAngle = Math.PI / 2 * delta;   // pi/2 radians (90 degrees) per second
-            // var rotateAngle = 90;
-			var container, stats;
-			// var obj;
 
+		// MAIN
 
-			var camera, scene, renderer;
+			// standard global variables
+			var container, scene, camera, renderer, controls;
 
+			//custom global variables
 			var mouseX = 0, mouseY = 0;
-
 			var windowHalfX = window.innerWidth / 2;
 			var windowHalfY = window.innerHeight / 2 ;
 
 			init();
 			animate();
 
+
+
+		// FUNCTIONS
+
 			function init() {
 
-				container = document.createElement( 'div' );
-				document.body.appendChild( container );
+				// SCENE
+				scene = new THREE.Scene();
 
+				// CAMERA
 				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
 				camera.position.z = 50;
 
-				// scene
-				scene = new THREE.Scene();
+				// RENDERER
+				renderer = new THREE.WebGLRenderer({
+					antialias: true,
+					alpha:true
+				});
+				renderer.setClearColor( 0xffffff ); 
+				renderer.setSize( window.innerWidth, window.innerHeight );
 
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+				container.appendChild( renderer.domElement );
+
+
+				// EVENTS
+
+				// CONTROLS
+
+
+				// LIGHT
 				var ambient = new THREE.AmbientLight( 0x000000 );
 				scene.add( ambient );
-
 				var directionalLight = new THREE.DirectionalLight( 0xffeedd );
 				directionalLight.position.set( 0, 0, 1 );
 				scene.add( directionalLight );
 
-				// texture
+				// TEXTURE
 				var manager = new THREE.LoadingManager();
 				manager.onProgress = function ( item, loaded, total ) {
-
 					console.log( item, loaded, total );
-
 				};
 
-				// model
+				// MODEL
 				var loader = new THREE.OBJLoader( manager );
 				loader.load( 'helix.obj', function ( object ) {
 
-					// object.traverse( function ( child ) {
-
-					// 	// if ( child instanceof THREE.Mesh ) {
-
-					// 	// 	// child.material.map = texture;
-
-					// 	// }
-
-					// } );
-
                     object.rotation.x = 20* Math.PI / 180;
-                    object.rotation.z = 20* Math.PI / 180;
-                    		//NOTE TO SELF - Math.PI / 180 converts a degrees into radians.
+                    object.rotation.z = 20* Math.PI / 180; // NOTE TO SELF... Math.PI / 180 converts a degrees into radians.
                     object.scale.x = 50;
                     object.scale.y = 50;
                     object.scale.z = 50;
@@ -106,21 +90,13 @@
 
 				} );
 
-				renderer = new THREE.WebGLRenderer({
-					antialias: true,
-					alpha:true
-				});
-				renderer.setClearColor( 0xffffff ); 
-				renderer.setSize( window.innerWidth, window.innerHeight );
-
-				container.appendChild( renderer.domElement );
-
+				//there might be a better way to write these...
 				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-
 				window.addEventListener( 'resize', onWindowResize, false );
 
-
 			} //end init
+
+
 
 
 			function onWindowResize() {
@@ -140,6 +116,11 @@
 				mouseY = ( event.clientY - windowHalfY );
 			}
 
+			function checkIntersection() {
+				//find if mouse is over the model
+
+			}
+
 			function animate() {
 				requestAnimationFrame( animate );
 				render();
@@ -147,24 +128,18 @@
 
 			function render() {
 				//it's not recognizing .obj object...
-                obj.rotation.y += (0.02);
+                // obj.rotation.y += (0.005);
                 // obj.rotation.x %=360;
 
                 // obj.rotateOnAxis(1, 0); //axis in vector and angle in radians
 
-				// camera.position.x += ( mouseX - camera.position.x ) * .05;
-				// camera.position.y += ( mouseY - camera.position.y ) * .05;
+				camera.position.x += ( mouseX - camera.position.x ) * .05;
+				camera.position.y += ( mouseY - camera.position.y ) * .05;
 
 				camera.lookAt( scene.position );
 
 				renderer.render( scene, camera );
 			}
-
-
-
-
-
-
 
 		</script>
 	</body>
