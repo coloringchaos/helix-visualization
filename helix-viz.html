@@ -11,12 +11,30 @@
 	<body>
 
 		<script src="http://threejs.org/build/three.min.js"></script>
-		<script src="http://threejs.org/examples/js/loaders/OBJLoader.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 
+		<!-- // <script src="libs/Three.js"></script> -->
+		<script src="libs/OBJLoader.js"></script>
 		<script src="libs/OrbitControls.js"></script>
 		<script src="libs/THREEx.WindowResize.js"></script>
+		<!-- // <script src="libs/stats.min.js"></script> -->
+
+		<!-- bootstrap stuff for popover -->
+		<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+		<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+
+		<div style="position: absolute; z-index: 1; left: 40px; top: 40px; width:400px; height:30px;">
+			<a href="#" data-toggle="popover" title="Popover Header" data-content="Some content inside the popover">Info Toggle</a>
+		</div>
+
 
 		<script>
+
+		$(document).ready(function(){
+		    $('[data-toggle="popover"]').popover();   
+		});
 
 		// MAIN
 
@@ -32,7 +50,6 @@
 			animate();
 
 
-
 		// FUNCTIONS
 
 			function init() {
@@ -45,8 +62,7 @@
 				var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
 				camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
 				scene.add(camera);
-				camera.position.set(0, 20, 0);
-				camera.position.z = 50;
+				camera.position.set(0, 0, 30); //changing y will look down on the heilx - changing the z helps make the lighting better
 				//camera.lookOut needs to be called in render function below
 
 				// RENDERER
@@ -70,6 +86,9 @@
 				var directionalLight = new THREE.DirectionalLight( 0xffeedd );
 				directionalLight.position.set( 0, 0, 1 );
 				scene.add( directionalLight );
+				var light = new THREE.PointLight(0xffffff,1,4500);
+				light.position.set(-600,2000,-600);
+				scene.add(light);
 
 				// TEXTURE
 				var manager = new THREE.LoadingManager();
@@ -81,11 +100,22 @@
 				var loader = new THREE.OBJLoader( manager );
 				loader.load( 'helix.obj', function ( object ) {
 
-                    object.rotation.x = 20* Math.PI / 180;
-                    object.rotation.z = 20* Math.PI / 180; // NOTE TO SELF... Math.PI / 180 converts a degrees into radians.
-                    object.scale.x = 50;
-                    object.scale.y = 50;
-                    object.scale.z = 50;
+					//trying to change color, doesn't seem to be working..
+					object.traverse(function(child){
+						if (child instanceof THREE.Mesh){
+							// child.material.ambient.setHex(0xFF0000); //this doesn't work
+							child.material.color.setHex(0xe20c65); //this turns it greeeeeen :) 
+						}
+					});
+
+                    // object.rotation.x = 90 * Math.PI / 180; //this rotates it 90 degrees - lighting is messed up thought
+                    // NOTE TO SELF... Math.PI / 180 converts a degrees into radians
+
+                    //manipulate the scale
+                    object.scale.x = 30;
+                    object.scale.y = 30;
+                    object.scale.z = 30;
+
                     obj = object;
 					scene.add( obj );
 
@@ -93,9 +123,36 @@
 
 			} //end init
 
-			function checkIntersection() {
-				//find if mouse is over the model
+			//for raycasting stuff
+			var raycaster = new THREE.Raycaster();
+			var mouse = new THREE.Vector2(); //or not sure if this should be a THREE.Vector2 ??
+
+			// function onMouseMove(event) {
+			// 	// calculate mouse position in normalized device coordinates
+			// 	// when this is in, it messes up the zooming	
+			// 	// (-1 to +1) for both components
+			// 	mouse.x = (event.clientX / window.innerWIdth) * 2 - 1;
+			// 	mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+			// }
+
+			//this isn't working...
+			function checkIntersection() { //raycasting stuff 
+				raycaster.setFromCamera(mouse, camera);
+
+				// calculate objects intersecting th epicking raycaster
+				var intersects = raycaster.intersectObjects (scene.children);
+
+				for (var i = 0; i < intersects.length; i++) {
+					intersects [i].object.material.color.set(0xff0000);
+				}
+
+				// raycaster.set(camera.position, vector.sub(camera.position).normalize());
+				// var intersects = raycaster.intersectObjects(scene.children);
+
+				// INTERSECTED = intersects[0].object;
 			}
+
+			///////////////////////////////////////
 
 			function animate() {
 				requestAnimationFrame( animate );
@@ -103,9 +160,16 @@
 			}
 
 			function render() {
+				//call checkIntersection here
+				// checkIntersection();
+
 				camera.lookAt( scene.position );
 				renderer.render( scene, camera );
 			}
+
+			// for raycasting stuff
+			// window.addEventListener('mousemove', onMouseMove, false);
+			// window.requestAnimationFrame(render);
 
 		</script>
 	</body>
