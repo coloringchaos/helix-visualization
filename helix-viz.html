@@ -10,58 +10,25 @@
 
 	<body>
 
+		<!-- QUESTION: is this the best way to incorporate three.js? or is downloading it better? same with jquery... -->
 		<script src="http://threejs.org/build/three.min.js"></script>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 
 		<script src="libs/OBJLoader.js"></script>
 		<script src="libs/OrbitControls.js"></script>
 		<script src="libs/THREEx.WindowResize.js"></script>
-
-		<!-- bootstrap stuff for popover -->
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-		<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-		<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-
-		<div class="container" style="position: absolute; z-index: 10; left: 40px; top: 40px; width:100%; height: 100%;">
-			<a href="#" data-toggle="popover" title="Popover Header" data-content="Some content inside the popover">Toggle</a>
-		</div>
-
-		<!-- appropirate popover content would populate into this div -->
-		<div class="popover">
-		</div>
-
+		
 		<script>
-
-		$('.container').click(function (e) {
-			//get the mouse position
-		    var offset = $(this).offset();
-		    var left = e.pageX;
-		    var top = e.pageY;
-		    var theHeight = $('.popover').height();
-		    //display the popover
-		    $('.popover').show();
-		    $('.popover').css('left', (left+10) + 'px');
-		    $('.popover').css('top', (top-(theHeight/2)-5) + 'px');
-		});
-
-
-		//bootstrap popover here - - - >
-		//this toggles on and off with click - but only works when the text is clicked on
-		$(document).click(function(){
-		    // $('[data-toggle="popover"]').popover();
-		    $('[data-toggle="popover"]').popover();
-		});
-
 
 		// MAIN
 
 			// standard global variables
-			var container, scene, camera, renderer, controls, stats;
+			var container, scene, camera, renderer, controls;
 
 			//custom global variables
 			var mouseX = 0, mouseY = 0;
 			var windowHalfX = window.innerWidth / 2;
-			var windowHalfY = window.innerHeight / 2 ;
+			var windowHalfY = window.innerHeight / 2;
 
 			init();
 			animate();
@@ -79,8 +46,7 @@
 				var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
 				camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
 				scene.add(camera);
-				camera.position.set(0, 0, 30); //changing y will look down on the heilx - changing the z helps make the lighting better
-				//camera.lookOut needs to be called in render function below
+				camera.position.set(0, 0, 30);
 
 				// RENDERER
 				renderer = new THREE.WebGLRenderer({ antialias: true, alpha:true });
@@ -96,6 +62,7 @@
 
 				// CONTROLS
 				controls = new THREE.OrbitControls( camera, renderer.domElement );
+				// TODO: fix the navigation around the model...
 
 				// LIGHT
 				var ambient = new THREE.AmbientLight( 0x000000 );
@@ -117,17 +84,12 @@
 				var loader = new THREE.OBJLoader( manager );
 				loader.load( 'helix.obj', function ( object ) {
 
-					//trying to change color, doesn't seem to be working..
 					object.traverse(function(child){
 						if (child instanceof THREE.Mesh){
-							// child.material.ambient.setHex(0xFF0000); //this doesn't work
-							child.material.color.setHex(0xe20c65); //this turns it greeeeeen :) 
+							// child.material.ambient.setHex(0xFF0000); // this doesn't work...
+							child.material.color.setHex(0xe20c65); //change the model's COLORS :) 
 						}
 					});
-
-                    // object.rotation.x = 90 * Math.PI / 180; //this rotates it 90 degrees - lighting is messed up thought
-                    // NOTE TO SELF... Math.PI / 180 converts a degrees into radians
-
                     //manipulate the scale
                     object.scale.x = 30;
                     object.scale.y = 30;
@@ -137,59 +99,28 @@
 					scene.add( obj );
 
 				} );
-
 			} //end init
 
-			//for raycasting stuff
-			var raycaster = new THREE.Raycaster();
-			var mouse = new THREE.Vector2(); //or not sure if this should be a THREE.Vector2 ??
-
-			// function onMouseMove(event) {
-			// 	// calculate mouse position in normalized device coordinates
-			// 	// when this is in, it messes up the zooming	
-			// 	// (-1 to +1) for both components
-			// 	mouse.x = (event.clientX / window.innerWIdth) * 2 - 1;
-			// 	mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
-			// }
-
-			//this isn't working...
-			function checkIntersection() { //raycasting stuff 
-				raycaster.setFromCamera(mouse, camera);
-
-				// calculate objects intersecting th epicking raycaster
-				var intersects = raycaster.intersectObjects (scene.children);
-
-				for (var i = 0; i < intersects.length; i++) {
-					intersects [i].object.material.color.set(0xff0000);
-				}
-
-				// raycaster.set(camera.position, vector.sub(camera.position).normalize());
-				// var intersects = raycaster.intersectObjects(scene.children);
-
-				// INTERSECTED = intersects[0].object;
-			}
 
 			///////////////////////////////////////
+
+			// QUESTION: is this the best way to call animate and render? 
+			// Is something like this better? - window.requestAnimationFrame(render); 
 
 			function animate() {
 				requestAnimationFrame( animate );
 				render();
 			}
 
-			//add a callback here to only run render when everything is loaded
 			function render() {
-				//call checkIntersection here
-				// checkIntersection();
-
-				obj.rotation.y += (0.003);
+				obj.rotation.y += (0.003); // TODO: only call this when model has been loaded
+				// object.rotation.x = 90 * Math.PI / 180; //this rotates it 90 degrees - lighting is messed up though..
+                // NOTE TO SELF... Math.PI / 180 converts a degrees into radians
 
 				camera.lookAt( scene.position );
 				renderer.render( scene, camera );
 			}
 
-			// for raycasting stuff
-			// window.addEventListener('mousemove', onMouseMove, false);
-			// window.requestAnimationFrame(render);
 
 		</script>
 	</body>
