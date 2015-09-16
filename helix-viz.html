@@ -13,28 +13,45 @@
 		<script src="http://threejs.org/build/three.min.js"></script>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 
-		<!-- // <script src="libs/Three.js"></script> -->
 		<script src="libs/OBJLoader.js"></script>
 		<script src="libs/OrbitControls.js"></script>
 		<script src="libs/THREEx.WindowResize.js"></script>
-		<!-- // <script src="libs/stats.min.js"></script> -->
 
 		<!-- bootstrap stuff for popover -->
-		<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 		<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+		<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 
-
-		<div style="position: absolute; z-index: 1; left: 40px; top: 40px; width:400px; height:30px;">
-			<a href="#" data-toggle="popover" title="Popover Header" data-content="Some content inside the popover">Info Toggle</a>
+		<div class="container" style="position: absolute; z-index: 10; left: 40px; top: 40px; width:100%; height: 100%;">
+			<a href="#" data-toggle="popover" title="Popover Header" data-content="Some content inside the popover">Toggle</a>
 		</div>
 
+		<!-- appropirate popover content would populate into this div -->
+		<div class="popover">
+		</div>
 
 		<script>
 
-		$(document).ready(function(){
-		    $('[data-toggle="popover"]').popover();   
+		$('.container').click(function (e) {
+			//get the mouse position
+		    var offset = $(this).offset();
+		    var left = e.pageX;
+		    var top = e.pageY;
+		    var theHeight = $('.popover').height();
+		    //display the popover
+		    $('.popover').show();
+		    $('.popover').css('left', (left+10) + 'px');
+		    $('.popover').css('top', (top-(theHeight/2)-5) + 'px');
 		});
+
+
+		//bootstrap popover here - - - >
+		//this toggles on and off with click - but only works when the text is clicked on
+		$(document).click(function(){
+		    // $('[data-toggle="popover"]').popover();
+		    $('[data-toggle="popover"]').popover();
+		});
+
 
 		// MAIN
 
@@ -159,9 +176,12 @@
 				render();
 			}
 
+			//add a callback here to only run render when everything is loaded
 			function render() {
 				//call checkIntersection here
 				// checkIntersection();
+
+				obj.rotation.y += (0.003);
 
 				camera.lookAt( scene.position );
 				renderer.render( scene, camera );
